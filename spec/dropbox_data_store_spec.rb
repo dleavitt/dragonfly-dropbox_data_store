@@ -16,6 +16,10 @@ describe Dragonfly::DropboxDataStore do
     File.join(@root_path, path)
   end
 
+  def fixture(name)
+    File.open(File.join(File.dirname(__FILE__), 'fixtures', "#{name}"))
+  end
+
   let(:app) { Dragonfly.app }
   let(:content) { content1 }
   let(:content1) { Dragonfly::Content.new(app, "pigbot") }
@@ -76,6 +80,27 @@ describe Dragonfly::DropboxDataStore do
       it 'does not write a metadata file' do
         uid = @data_store.write(content)
         assert_does_not_exist("#{uid}.meta.yml")
+      end
+    end
+  end
+
+  describe 'url_for' do
+    let(:content) { Dragonfly::Content.new(app, fixture('piglets.jpg')) }
+    let(:uid) { @data_store.write(content) }
+
+    it "returns a URL" do
+      expect(@data_store.url_for(uid)).to start_with 'http'
+    end
+
+    context "without a expires option" do
+      it "returns a shortened URL" do
+        expect(@data_store.url_for(uid)).to start_with 'https://db.tt'
+      end
+    end
+
+    context "with the expires option set" do
+      it "returns a shortened URL" do
+        expect(@data_store.url_for(uid, expires: true)).to start_with 'https://dl.dropboxusercontent.com'
       end
     end
   end

@@ -50,6 +50,14 @@ module Dragonfly
       wrap_error { storage.file_delete(path) }
     end
 
+    # Only option is "expires" and it's a boolean
+    def url_for(path, opts = {})
+      path = absolute(path)
+      (opts[:expires] ? storage.media(path) : storage.shares(path))['url']
+    end
+
+    # TODO: thumbnail data-uri
+
     def store_meta?
       @store_meta != false # Default to true if not set
     end

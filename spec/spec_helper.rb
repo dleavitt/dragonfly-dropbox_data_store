@@ -14,7 +14,7 @@ raise 'Please use an app_folder app' if CREDS['access_type'] == 'dropbox'
 
 RSpec.configure do |config|
   config.order = 'random'
-
+  
   config.before(:each) do
     @root_path = 'dragonfly_test'
 

@@ -19,10 +19,10 @@ describe Dragonfly::DropboxDataStore do
 
   describe "write" do
     it "doesn't overwrite duplicate files" do
-      path1 = @data_store.write(content1, path: 'thepath')
-      path2 = @data_store.write(content2, path: 'thepath')
-      expect(@data_store.read(path1)).to eq content1.data
-      expect(@data_store.read(path2)).to eq content2.data
+      path1 = @data_store.write(content1, :path => 'thepath')
+      path2 = @data_store.write(content2, :path => 'thepath')
+      expect(@data_store.read(path1)[0]).to eq content1.data
+      expect(@data_store.read(path2)[0]).to eq content2.data
       expect(path1).not_to eq path2
     end
 
@@ -48,6 +48,30 @@ describe Dragonfly::DropboxDataStore do
       uid.should =~ /hello\/there/
       new_content.update(*@data_store.read(uid))
       new_content.data.should == 'pigbot'
+    end
+
+    it 'writes a metadata file' do
+      uid = @data_store.write(content)
+      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.not_to raise_error
+    end
+
+    context 'metadata disabled' do
+      before { @data_store.store_meta = false }
+      
+      it 'does not write a metadata file' do
+        uid = @data_store.write(content)
+        expect { @data_store.storage.get_file("#{uid}.meta.yml") }
+          .to raise_error(DropboxError, "File not found")
+      end
+    end
+  end
+
+  describe 'destroy' do
+    it 'destroys the metadata file' do
+      uid = @data_store.write(content)
+      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.not_to raise_error
+      @data_store.destroy(uid)
+      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.to raise_error
     end
   end
 end

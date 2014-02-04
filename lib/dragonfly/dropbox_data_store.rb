@@ -7,7 +7,7 @@ Dragonfly::App.register_datastore(:dropbox) { Dragonfly::DropboxDataStore }
 module Dragonfly
   class DropboxDataStore
     attr_accessor :app_key, :app_secret, :access_token, :access_token_secret, 
-                  :user_id, :access_type
+                  :user_id, :access_type, :store_meta
     
     def initialize(opts = {})
       @app_key             = opts[:app_key]
@@ -15,32 +15,39 @@ module Dragonfly
       @access_token        = opts[:access_token]
       @access_token_secret = opts[:access_token_secret]
       @user_id             = opts[:user_id]
-      @access_type         = opts[:access_type] || 'dropbox' # dropbox|app_folder
+      @access_type         = opts[:access_type] || 'app_folder' # dropbox|app_folder
+
+      @store_meta          = opts[:store_meta]
+
       # TODO: path for access_type=dropbox
       # TODO: how is path typically specified in dragonfly? leading slash?
-      # TODO: meta
     end
 
     def write(content, opts = {})
       # TODO: deal with dropbox vs. app_folder stuff
       # figure out how paths work for each
       path = opts[:path] || relative_path_for(content.name || 'file')
-      storage.put_file(path, content.file)['path']
+      data_path = storage.put_file(path, content.file)['path']
+      storage.put_file(meta_path(data_path), YAML.dump(content.meta)) if store_meta?
+      data_path
     end
 
     def read(path)
-      storage.get_file(path)
-    rescue DropboxError
-      nil
+      wrap_error do
+        [ storage.get_file(path),
+          store_meta? && YAML.load(storage.get_file(meta_path(path))) ]
+      end
     end
 
     def destroy(path)
-      storage.file_delete(path)
-    rescue DropboxError
-      nil
+      # TODO: purge empty directories
+      wrap_error { storage.file_delete(meta_path(path)) } if store_meta?
+      wrap_error { storage.file_delete(path) }
     end
 
-    protected
+    def store_meta?
+      @store_meta != false # Default to true if not set
+    end
 
     def storage
       @storage ||= begin
@@ -48,6 +55,18 @@ module Dragonfly
         session.set_access_token(access_token, access_token_secret)
         DropboxClient.new(session, access_type)
       end
+    end
+
+    protected
+
+    def wrap_error
+      yield
+    rescue DropboxError
+      nil
+    end
+
+    def meta_path(data_path)
+      "#{data_path}.meta.yml"
     end
 
     def relative_path_for(filename)

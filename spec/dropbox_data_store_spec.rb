@@ -2,13 +2,27 @@ require 'spec_helper'
 
 describe Dragonfly::DropboxDataStore do
 
-  it_should_behave_like 'data_store'
+  def assert_exists(path)
+    path = absolute_path(path)
+    expect { @data_store.storage.get_file(path) }.not_to raise_error
+  end
+
+  def assert_does_not_exist(path)
+    path = absolute_path(path)
+    expect { @data_store.storage.get_file(path) }.to raise_error(DropboxError)
+  end
+
+  def absolute_path(path)
+    File.join(@root_path, path)
+  end
 
   let(:app) { Dragonfly.app }
   let(:content) { content1 }
   let(:content1) { Dragonfly::Content.new(app, "pigbot") }
   let(:content2) { Dragonfly::Content.new(app, "pigbot2") }
   let(:new_content) { Dragonfly::Content.new(app) }
+
+  it_should_behave_like 'data_store'
 
   describe "registering with a symbol" do
     it "registers a symbol for configuring" do
@@ -19,8 +33,9 @@ describe Dragonfly::DropboxDataStore do
 
   describe "write" do
     it "doesn't overwrite duplicate files" do
-      path1 = @data_store.write(content1, :path => 'thepath')
-      path2 = @data_store.write(content2, :path => 'thepath')
+      path = absolute_path("thepath")
+      path1 = @data_store.write(content1, :path => path)
+      path2 = @data_store.write(content2, :path => path)
       expect(@data_store.read(path1)[0]).to eq content1.data
       expect(@data_store.read(path2)[0]).to eq content2.data
       expect(path1).not_to eq path2
@@ -44,7 +59,7 @@ describe Dragonfly::DropboxDataStore do
     end
 
     it "should allow for setting the path manually" do
-      uid = @data_store.write(content, :path => 'hello/there')
+      uid = @data_store.write(content, :path => absolute_path('hello/there'))
       uid.should =~ /hello\/there/
       new_content.update(*@data_store.read(uid))
       new_content.data.should == 'pigbot'
@@ -52,7 +67,7 @@ describe Dragonfly::DropboxDataStore do
 
     it 'writes a metadata file' do
       uid = @data_store.write(content)
-      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.not_to raise_error
+      assert_exists("#{uid}.meta.yml")
     end
 
     context 'metadata disabled' do
@@ -60,8 +75,7 @@ describe Dragonfly::DropboxDataStore do
       
       it 'does not write a metadata file' do
         uid = @data_store.write(content)
-        expect { @data_store.storage.get_file("#{uid}.meta.yml") }
-          .to raise_error(DropboxError, "File not found")
+        assert_does_not_exist("#{uid}.meta.yml")
       end
     end
   end
@@ -69,9 +83,9 @@ describe Dragonfly::DropboxDataStore do
   describe 'destroy' do
     it 'destroys the metadata file' do
       uid = @data_store.write(content)
-      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.not_to raise_error
+      assert_exists("#{uid}.meta.yml")
       @data_store.destroy(uid)
-      expect { @data_store.storage.get_file("#{uid}.meta.yml") }.to raise_error
+      assert_does_not_exist("#{uid}.meta.yml")
     end
   end
 end

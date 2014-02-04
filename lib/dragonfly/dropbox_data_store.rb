@@ -25,8 +25,7 @@ module Dragonfly
       # TODO: deal with dropbox vs. app_folder stuff
       # figure out how paths work for each
       path = opts[:path] || relative_path_for(content.name || 'file')
-      storage.put_file(path, content.file)
-      path
+      storage.put_file(path, content.file)['path']
     end
 
     def read(path)

@@ -1,6 +1,7 @@
-require 'dropbox_sdk'
 require 'dragonfly'
-require "dragonfly/dropbox_data_store/version"
+require 'dropbox_sdk'
+require 'dragonfly/dropbox_data_store/version'
+require 'dragonfly/dropbox_data_store/railtie' if defined?(Rails)
 
 Dragonfly::App.register_datastore(:dropbox) { Dragonfly::DropboxDataStore }
 

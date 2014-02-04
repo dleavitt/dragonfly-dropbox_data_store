@@ -1,0 +1,6 @@
+app_key: dummy
+app_secret: dummy
+access_token: dummy
+access_token_secret: dummy
+user_id: 12345
+access_type: app_folder

@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Dragonfly::DropboxDataStore::VERSION
   spec.authors       = ["Daniel Leavitt"]
   spec.email         = ["daniel.leavitt@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{Dropbox data store for Dragonfly}
+  spec.description   = %q{Dragonfly plugin for storing attachments on Dropbox}
+  spec.homepage      = "https://github.com/dleavitt/dragonfly-dropbox_data_store"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

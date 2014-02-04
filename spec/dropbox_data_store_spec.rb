@@ -92,14 +92,14 @@ describe Dragonfly::DropboxDataStore do
       expect(@data_store.url_for(uid)).to start_with 'http'
     end
 
-    context "without a expires option" do
+    context "without the expires option" do
       it "returns a shortened URL" do
         expect(@data_store.url_for(uid)).to start_with 'https://db.tt'
       end
     end
 
     context "with the expires option set" do
-      it "returns a shortened URL" do
+      it "returns a full URL" do
         expect(@data_store.url_for(uid, expires: true)).to start_with 'https://dl.dropboxusercontent.com'
       end
     end

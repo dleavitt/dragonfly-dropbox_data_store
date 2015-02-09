@@ -24,7 +24,7 @@ Or install it yourself as:
 
 Go here and create a new app: https://www.dropbox.com/developers/apps
 
-Select "Dropbox API App" and then "Datastores only."
+Select "Dropbox API app", then "Files and datastores", then answer "Yes" to "Can your app be limited to its own folder?"
 
 The latter option means the app can only access files within its application sandbox rather than your whole Dropbox. This sandbox is located in `Apps/{your-app-name}` within your Dropbox.
 
@@ -41,7 +41,7 @@ load "dragonfly/dropbox_data_store/tasks.rake"
 
 Hold on to these creds for the next step.
 
-## Useage
+## Usage
 
 ### Configuration
 
